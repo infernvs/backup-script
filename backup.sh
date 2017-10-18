@@ -33,7 +33,7 @@ curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid 
 # Copy over ssh
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Copy backup $archive_file to orangepi"
 
-scp $dest/$archive_file user@host:~/backups:~/backups
+scp $dest/$archive_file user@host:~/backups
 
 #finished copy 
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Backup $archive_file to orangepi complete"
