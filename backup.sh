@@ -20,6 +20,21 @@ archive_file="$hostname-$day.tgz"
 api=bot api 
 chatid=chat id info
 
+#Archive Filename
+date=`date +%d-%b-%Y`
+sql_file="sql_backup-$date.tgz"
+src_dir="/tmp/backup"
+
+#Database info
+user="root"
+password="change.me"
+db_name="fulldbbackup"
+
+#ssh info
+suser=user
+shost=host
+sloc=ssh host location
+
 # Print start status message.
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Backing up $backup_files to $dest/$archive_file"
 
@@ -33,7 +48,7 @@ curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid 
 # Copy over ssh
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Copy backup $archive_file to orangepi"
 
-scp $dest/$archive_file user@host:~/backups
+scp $dest/$archive_file $suser@$shost:$sloc
 
 #finished copy 
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Backup $archive_file to orangepi complete"
@@ -47,15 +62,6 @@ curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid 
 #Start database backup
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Starting SQL Backup"
 
-#Archive Filename
-date=`date +%d-%b-%Y`
-sql_file="sql_backup-$date.tgz"
-src_dir="/tmp/backup"
-
-#Database info
-user="root"
-password="change.me"
-db_name="fulldbbackup"
 
 #dump database
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="dump database"
@@ -73,7 +79,7 @@ rm $dest/$db_name-$date.sql
 # Copy over ssh
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Copy backup to orangepi"
 
-scp $dest/$sql_file user@host:~/backups
+scp $dest/$sql_file $suser@$shost:$sloc
 
 #delete sql tar file
 rm $dest/$sql_file
@@ -84,7 +90,7 @@ uptime >> /tmp/backup/info2
 uname=`cat /tmp/backup/info1`
 uptime=`cat /tmp/backup/info2`
 
-curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Current uptime of $uname is $uptime. All backups complete, good bye!"
+curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Current uptime of $uname is $uptime. All backups complete, good bye! :)"
 rm /tmp/backup/info1
 rm /tmp/backup/info2
 #done
