@@ -42,7 +42,7 @@ Send the /start command:
 
 `/start`
 
-To get the chat ID, open the following URL in your web-browser: https://api.telegram.org/bot**«TOKEN»**/getUpdates (replace **«TOKEN»** with your bot token).
+To get the chat ID, open the following URL in your web-browser: https://api.telegram.org/bot**TOKEN**/getUpdates (replace **«TOKEN»** with your bot token).
 
 
 
