@@ -31,9 +31,9 @@ password="change.me"
 db_name="fulldbbackup"
 
 #ssh info
-suser=user
-shost=host
-sloc=ssh host location
+suser="user"
+shost="host"
+sloc="ssh host location"
 
 # Print start status message.
 curl -s -X POST https://api.telegram.org/bot$api/sendMessage -d chat_id=$chatid -d text="Backing up $backup_files to $dest/$archive_file"
