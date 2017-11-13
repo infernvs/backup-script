@@ -1,88 +1,64 @@
-#!/bin/bash
-####################################
-#
-# Backup script.
-#
-####################################
+#!/bin/csh
+#######################################
+#                                     #
+# Backup script for FreeBSD           #
+# using restic & telegram messages    #
+#                                     #
+#######################################
 
-# What to backup. 
-backup_files="/usr/home /usr/local/etc/apache24 /usr/local/etc/namedb"
+# Folders to backup
+backup_files="/usr/home /usr/local/etc/apache24 /usr/local/etc/namedb /usr/local/etc/squid"
 
-# Where to backup to.
-dest="/tmp/backup"
+# Where to backup.
+dest="change-me"
+sshuser="user"
+sshhost="host/ip"
 
-# Create archive filename.
-day=`date +%d-%b-%Y`
-hostname=$(hostname -s)
-archive_file="$hostname-$day.tgz"
+#Telegram details
+api=bot-api
+chatid=chat-id
+url="https://api.telegram.org/bot$api/sendMessage"
 
 #Archive Filename
 date=`date +%d-%b-%Y`
 sql_file="sql_backup-$date.tgz"
 src_dir="/tmp/backup"
+tmp_dir="/tmp/backup"
 
 #Database info
-user="root"
-password="change.me"
+user="user"
+password="mysql_password"
 db_name="fulldbbackup"
 
-#Telegram details
-api=bot api 
-chatid=chat id info
-url="https://api.telegram.org/bot$api/sendMessage"
-
-#ssh info
-suser="user"
-shost="host/ip"
-sloc="backup remote location"
-
 # Print start status message.
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Backing up <b>$backup_files</b> to <b>$dest/$archive_file</b>"
+curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Backing up <b>$backup_files</b> to <b>$sshhost/$dest</b>"
 
-# Backup the files using tar.
-tar czvfP $dest/$archive_file $backup_files
+#starting backup
+restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw backup $backup_files
 
-# Print end status message.
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Backup finished at <b>$dest/$archive_file</b>"
+mysqldump --user=$user --events --ignore-table=mysql.event --password=$password --all-databases > $tmp_dir/$db_name-$date.sql
 
-# Copy over ssh
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Copy backup <b>$archive_file</b> to orangepi"
+tar -cpzf $tmp_dir/$sql_file --directory=/ --exclude=proc --exclude=sys --exclude=dev/pts --exclude=$tmp_dir $src_dir
 
-scp $dest/$archive_file $suser@$shost:$sloc
+restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw backup $src_dir/$sql_file
 
-#finished copy 
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Backup <b>$archive_file<b> to orangepi complete"
+restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw forget --keep-last 1
 
-#Start database backup
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Starting SQL Backup"
-
-#dump database
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="dump database"
-
-mysqldump --user=$user --events --ignore-table=mysql.event --password=$password --all-databases > $dest/$db_name-$date.sql
-
-#make tar
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Backup the files using tar."
-
-tar -cpzf $dest/$sql_file --directory=/ --exclude=proc --exclude=sys --exclude=dev/pts --exclude=$dest $src_dir
-
-# Copy over ssh
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Copy backup to orangepi"
-
-scp $dest/$sql_file $suser@$shost:$sloc
+restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw snapshots >> /tmp/backup/ss
 
 uname -onr >> /tmp/backup/info1
 uptime >> /tmp/backup/info2
 
 uname=`cat /tmp/backup/info1`
 uptime=`cat /tmp/backup/info2`
+snapshots=`cat /tmp/backup/ss`
 
-curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="Current uptime of <b>$uname</b> is <b>$uptime</b>. All backups complete, good bye! :)"
+curl -s -X POST $url -d chat_id=$chatid -d parse_mode="HTML" -d text="<b>Current backups</b>%0A %0A $snapshots%0A %0A Current uptime of %0A <b>$uname</b> is %0A %0A <b>$uptime</b>"
 
 #delete files
-rm $dest/$archive_file
-rm $dest/$db_name-$date.sql
-rm $dest/$sql_file
+rm /tmp/backup/$db_name-$date.sql
+rm /tmp/backup/$sql_file
 rm /tmp/backup/info1
 rm /tmp/backup/info2
+rm /tmp/backup/ss
 #done
