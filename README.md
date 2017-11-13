@@ -2,6 +2,10 @@
 
 backup script with messages to telegram via bot
 
+updated scrit now using **restic** 
+
+https://restic.github.io/
+
 **Create Telegram Bot**
 
 Start a conversation with the *BotFather*:
