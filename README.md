@@ -2,7 +2,7 @@
 
 backup script with messages to telegram via bot
 
-updated scrit now using **restic** 
+updated script now using **restic** 
 
 https://restic.github.io/
 
