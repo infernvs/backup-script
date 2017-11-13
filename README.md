@@ -50,5 +50,5 @@ To get the chat ID, open the following URL in your web-browser: https://api.tele
 
 
 
-![](https://infernvs.ugnetwork.org/telegram1.jpg)
+![](https://infernvs.ugnetwork.org/telegram_new.png)
 
