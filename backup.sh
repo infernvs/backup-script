@@ -42,7 +42,7 @@ tar -cpzf $tmp_dir/$sql_file --directory=/ --exclude=proc --exclude=sys --exclud
 
 restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw backup $src_dir/$sql_file
 
-restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw forget --keep-last 1
+restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw forget --keep-last 1 --prune
 
 restic -r sftp:$sshuser@$sshhost:$dest -p /root/pw snapshots >> /tmp/backup/ss
 
